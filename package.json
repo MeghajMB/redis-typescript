@@ -1,0 +1,18 @@
+{
+  "name": "redis-typescript",
+  "module": "index.ts",
+  "type": "module",
+    "scripts": {
+    "dev": "bun run app/index.ts"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/node": "^24.0.12"
+  }
+}
