@@ -1,52 +1,36 @@
 import * as net from "net";
-import respEncoder from "./util/resp-encoder";
-import { RESPSTATE } from "./enum/resp-state.enum";
 
-const DATA: Map<any, { value: string; expiresAt: null | number }> = new Map();
+import { CommandRegistry } from "./commands/registry/command-registry";
+import { RespParser } from "./util/resp-parser";
+
+const args = process.argv.slice(2);
+let port = 6379;
+if (args[0] == "--port") {
+  if (!isNaN(Number(args[1]))) {
+    port = Number(args[1]);
+  }
+}
+const commandRegistry = new CommandRegistry();
 
 const server: net.Server = net.createServer((connection: net.Socket) => {
   connection.on("data", (data: Buffer) => {
-    const input = data.toString().trim();
+    try {
+      const input = data.toString().trim();
+      const { command, args } = RespParser.parse(input);
 
-    const lines = input.split("\r\n");
-    const command = lines[2]?.toUpperCase();
-
-    if (command == "PING") {
-      const result = respEncoder(RESPSTATE.STRING, "PONG");
-      connection.write(result);
-    } else if (command == "ECHO") {
-      const message = lines[4];
-      const result = respEncoder(RESPSTATE.BULK_STRING, message);
-      connection.write(result);
-    } else if (command == "SET") {
-      const key = lines[4];
-      const value = lines[6];
-      const option = lines[8]?.toUpperCase();
-      const ttl = Number(lines[10]);
-      if (!value) return;
-      if (option == "PX" && !isNaN(ttl)) {
-        DATA.set(key, { value, expiresAt: Date.now() + ttl });
-      } else {
-        DATA.set(key, { value, expiresAt: null });
+      const handler = commandRegistry.get(command);
+      if (!handler) {
+        throw new Error(`ERR unknown command '${command}'`);
       }
 
-      const result = respEncoder(RESPSTATE.SUCCESS);
-      connection.write(result);
-    } else if (command == "GET") {
-      const key = lines[4];
-      const record = DATA.get(key);
-      if (!record) throw new Error("No key set");
-      let result;
-      if (record.expiresAt !== null && Date.now() > record.expiresAt) {
-        DATA.delete(key);
-        result = respEncoder(RESPSTATE.NULL_BULK_STRING);
-      } else {
-        result = respEncoder(RESPSTATE.BULK_STRING, record.value);
-      }
-
-      connection.write(result);
+      const response = handler.execute(args);
+      connection.write(response);
+    } catch (error) {
+      if (error instanceof Error) connection.write(`-${error.message}\r\n`);
     }
   });
 });
 //
-server.listen(6379, "127.0.0.1");
+server.listen(port, "127.0.0.1", () => {
+  console.log("server listing on port ", port);
+});
