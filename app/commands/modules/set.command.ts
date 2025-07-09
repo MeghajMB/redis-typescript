@@ -1,7 +1,7 @@
-import { DATA } from "../data";
-import { RESPSTATE } from "../enum/resp-state.enum";
-import respEncoder from "../util/resp-encoder";
-import type { ICommand } from "./command.interface";
+import { RESPSTATE } from "../../enum/resp-state.enum";
+import { DATA } from "../../store/data";
+import respEncoder from "../../util/resp-encoder";
+import type { ICommand } from "../command.interface";
 
 export class GetCommand implements ICommand {
   execute(args: string[]): string {

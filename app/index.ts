@@ -1,15 +1,21 @@
 import * as net from "net";
-
-import { CommandRegistry } from "./commands/registry/command-registry";
 import { RespParser } from "./util/resp-parser";
+import { CommandRegistry } from "./commands/registry/command-registry";
+import { INFO } from "./store/data";
 
 const args = process.argv.slice(2);
+
 let port = 6379;
+let role: "master" | "slave" = "master";
 if (args[0] == "--port") {
   if (!isNaN(Number(args[1]))) {
     port = Number(args[1]);
   }
 }
+if (args.includes("--replicaof")) {
+  role = "slave";
+}
+INFO.set("role", role);
 const commandRegistry = new CommandRegistry();
 
 const server: net.Server = net.createServer((connection: net.Socket) => {
