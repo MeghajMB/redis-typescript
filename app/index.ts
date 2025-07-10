@@ -31,25 +31,33 @@ if (replicaIndex !== -1) {
       { host: masterHost, port: masterPort },
       () => {
         const pingCommand = respEncoder(RESPSTATE.ARRAY, ["PING"]);
-        const replConfPortCommand = respEncoder(RESPSTATE.ARRAY, [
-          "REPLCONF",
-          "listening-port",
-          String(port),
-        ]);
-        const replConfCapaCommand = respEncoder(RESPSTATE.ARRAY, [
-          "REPLCONF",
-          "capa",
-          "psync2",
-        ]);
         masterSocket.write(pingCommand);
         let handshakeStep = 1;
         masterSocket.on("data", (data: Buffer) => {
           const response = data.toString();
           if (handshakeStep == 1) {
+            const replConfPortCommand = respEncoder(RESPSTATE.ARRAY, [
+              "REPLCONF",
+              "listening-port",
+              String(port),
+            ]);
             masterSocket.write(replConfPortCommand);
             handshakeStep++;
           } else if (handshakeStep == 2) {
+            const replConfCapaCommand = respEncoder(RESPSTATE.ARRAY, [
+              "REPLCONF",
+              "capa",
+              "psync2",
+            ]);
             masterSocket.write(replConfCapaCommand);
+            handshakeStep++;
+          } else if (handshakeStep == 3) {
+            const psyncCommand = respEncoder(RESPSTATE.ARRAY, [
+              "PSYNC",
+              "?",
+              "-1",
+            ]);
+            masterSocket.write(psyncCommand);
             handshakeStep++;
           }
         });

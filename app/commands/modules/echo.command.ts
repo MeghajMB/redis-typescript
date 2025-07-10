@@ -8,6 +8,6 @@ export class EchoCommand implements ICommand {
     if (args.length < 1) {
       return respEncoder(RESPSTATE.ERROR, ["ERR wrong number of arguments for 'echo' command"]);
     }
-    return respEncoder(RESPSTATE.BULK_STRING, [args[0]]);
+    return respEncoder(RESPSTATE.BULK_STRING, [args[0] as string]);
   }
 }

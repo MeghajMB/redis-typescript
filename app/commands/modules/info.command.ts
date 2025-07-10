@@ -6,12 +6,13 @@ import type { ICommand } from "../command.interface";
 export class InfoCommand implements ICommand {
   execute(args: string[]): string {
     let info = "";
-    if (args[0].toLowerCase() == "replication") {
+    if (args[0]?.toLowerCase() == "replication") {
       const role = INFO.get("role");
       info = `role:${role}\r\n`;
       if (role == "master") {
-        info +=
-          "master_repl_offset:0\r\nmaster_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb";
+        const master_repl_id = INFO.get("master_replid");
+        const master_repl_offset = INFO.get("master_repl_offset");
+        info += `master_repl_offset:${master_repl_offset}\r\nmaster_replid:${master_repl_id}`;
       }
     }
     return respEncoder(RESPSTATE.BULK_STRING, [info]);

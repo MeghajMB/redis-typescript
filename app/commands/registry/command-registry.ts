@@ -7,6 +7,7 @@ import { PingCommand } from "../modules/ping.command";
 import type { ICommandRegistry } from "./command-registry.interface";
 import { InfoCommand } from "../modules/info.command";
 import { ReplConfCommand } from "../modules/replconf.command";
+import { PsyncCommand } from "../modules/psync.command";
 
 export class CommandRegistry implements ICommandRegistry {
   private _commands: Map<string, ICommand> = new Map();
@@ -18,7 +19,7 @@ export class CommandRegistry implements ICommandRegistry {
     this.register("GET", new GetCommand());
     this.register("INFO", new InfoCommand());
     this.register('REPLCONF', new ReplConfCommand())
-
+    this.register('PSYNC', new PsyncCommand())
   }
 
   private register(commandName: string, command: ICommand): void {

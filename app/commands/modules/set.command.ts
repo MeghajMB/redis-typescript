@@ -1,4 +1,3 @@
-
 import { DATA } from "../../store/data";
 import { RESPSTATE } from "../../enum/resp-state.enum";
 import respEncoder from "../../util/resp-encoder";
@@ -6,11 +5,10 @@ import type { ICommand } from "../command.interface";
 
 export class GetCommand implements ICommand {
   execute(args: string[]): string {
-    if (args.length < 1) {
-      return respEncoder(
-        RESPSTATE.ERROR,
-        ["ERR wrong number of arguments for 'get' command"]
-      );
+    if (args.length < 1 || !args[0]) {
+      return respEncoder(RESPSTATE.ERROR, [
+        "ERR wrong number of arguments for 'get' command",
+      ]);
     }
 
     const key = args[0];
