@@ -1,9 +1,12 @@
 import type { ICommand } from "../command.interface";
-import { EchoCommand } from "../echo.command";
-import { SetCommand } from "../get.command";
-import { PingCommand } from "../ping.command";
-import { GetCommand } from "../set.command";
+import { EchoCommand } from "../modules/echo.command";
+import { SetCommand } from "../modules/get.command";
+import { GetCommand } from "../modules/set.command";
+import { PingCommand } from "../modules/ping.command";
+
 import type { ICommandRegistry } from "./command-registry.interface";
+import { InfoCommand } from "../modules/info.command";
+import { ReplConfCommand } from "../modules/replconf.command";
 
 export class CommandRegistry implements ICommandRegistry {
   private _commands: Map<string, ICommand> = new Map();
@@ -13,6 +16,9 @@ export class CommandRegistry implements ICommandRegistry {
     this.register("ECHO", new EchoCommand());
     this.register("SET", new SetCommand());
     this.register("GET", new GetCommand());
+    this.register("INFO", new InfoCommand());
+    this.register('REPLCONF', new ReplConfCommand())
+
   }
 
   private register(commandName: string, command: ICommand): void {

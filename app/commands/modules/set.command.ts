@@ -1,5 +1,6 @@
-import { RESPSTATE } from "../../enum/resp-state.enum";
+
 import { DATA } from "../../store/data";
+import { RESPSTATE } from "../../enum/resp-state.enum";
 import respEncoder from "../../util/resp-encoder";
 import type { ICommand } from "../command.interface";
 
@@ -8,7 +9,7 @@ export class GetCommand implements ICommand {
     if (args.length < 1) {
       return respEncoder(
         RESPSTATE.ERROR,
-        "ERR wrong number of arguments for 'get' command"
+        ["ERR wrong number of arguments for 'get' command"]
       );
     }
 
@@ -24,6 +25,6 @@ export class GetCommand implements ICommand {
       return respEncoder(RESPSTATE.NULL_BULK_STRING);
     }
 
-    return respEncoder(RESPSTATE.BULK_STRING, record.value);
+    return respEncoder(RESPSTATE.BULK_STRING, [record.value]);
   }
 }

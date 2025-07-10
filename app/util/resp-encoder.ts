@@ -3,20 +3,27 @@ import type { RESPStateType } from "../types/types";
 
 export default function respEncoder(
   state: RESPStateType,
-  data: string = ""
+  data: string[] = [""]
 ): string {
   switch (state) {
     case RESPSTATE.STRING:
-      return `+${data}\r\n`;
+      return `+${data[0]}\r\n`;
 
     case RESPSTATE.ERROR:
-      return `-Error ${data}\r\n`;
+      return `-Error ${data[0]}\r\n`;
 
     case RESPSTATE.INTEGER:
       return `:${data}\r\n`;
 
     case RESPSTATE.BULK_STRING:
-      return `$${data.length}\r\n${data}\r\n`;
+      return `$${data[0].length}\r\n${data[0]}\r\n`;
+
+    case RESPSTATE.ARRAY:
+      let result = `*${data.length}\r\n`;
+      for (let i = 0; i < data.length; i++) {
+        result += `$${data[i].length}\r\n${data[i]}\r\n`;
+      }
+      return result;
 
     case RESPSTATE.NULL_BULK_STRING:
       return `$-1\r\n`;
