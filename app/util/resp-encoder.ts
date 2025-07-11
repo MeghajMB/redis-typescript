@@ -16,12 +16,12 @@ export default function respEncoder(
       return `:${data}\r\n`;
 
     case RESPSTATE.BULK_STRING:
-      return `$${data[0].length}\r\n${data[0]}\r\n`;
+      return `$${data[0]?.length}\r\n${data[0]}\r\n`;
 
     case RESPSTATE.ARRAY:
       let result = `*${data.length}\r\n`;
       for (let i = 0; i < data.length; i++) {
-        result += `$${data[i].length}\r\n${data[i]}\r\n`;
+        result += `$${data[i]?.length}\r\n${data[i]}\r\n`;
       }
       return result;
 

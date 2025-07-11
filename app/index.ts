@@ -4,6 +4,8 @@ import { CommandRegistry } from "./commands/registry/command-registry";
 import { INFO } from "./store/data";
 import respEncoder from "./util/resp-encoder";
 import { RESPSTATE } from "./enum/resp-state.enum";
+import fs from "fs";
+import path from "path";
 
 const args = process.argv.slice(2);
 
@@ -73,7 +75,7 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     try {
       const input = data.toString().trim();
       const { command, args } = RespParser.parse(input);
-      console.log(command, args);
+
       const handler = commandRegistry.get(command);
       if (!handler) {
         throw new Error(`ERR unknown command '${command}'`);
@@ -81,7 +83,15 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
 
       const response = handler.execute(args);
       connection.write(response);
+
+      if (command == "PSYNC" && args[0] == "?" && args[1] == "-1") {
+        const filePath = path.join(__dirname, "./store/empty.rdb");
+        const file = fs.readFileSync(filePath);
+        connection.write(`$${file.length}\r\n`);
+        connection.write(file);
+      }
     } catch (error) {
+      console.log(error);
       if (error instanceof Error) connection.write(`-${error.message}\r\n`);
     }
   });
