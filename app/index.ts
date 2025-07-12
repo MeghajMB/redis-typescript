@@ -62,6 +62,7 @@ if (replicaIndex !== -1) {
             masterSocket.write(psyncCommand);
             handshakeStep++;
           }
+          console.log(data.toString())
         });
       }
     );

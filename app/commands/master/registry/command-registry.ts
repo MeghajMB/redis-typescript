@@ -1,9 +1,9 @@
-import type { ICommand } from "../command.interface";
+import type { ICommand } from "../../command.interface";
 import { EchoCommand } from "../modules/echo.command";
-import { SetCommand } from "../modules/get.command";
-import { GetCommand } from "../modules/set.command";
+import { SetCommand } from "../modules/set.command";
+import { GetCommand } from "../modules/get.command";
 import { PingCommand } from "../modules/ping.command";
-
+import { DATA, REPLICA_CONNECTIONS } from "../../../store/data";
 import type { ICommandRegistry } from "./command-registry.interface";
 import { InfoCommand } from "../modules/info.command";
 import { ReplConfCommand } from "../modules/replconf.command";
@@ -15,11 +15,11 @@ export class CommandRegistry implements ICommandRegistry {
   constructor() {
     this.register("PING", new PingCommand());
     this.register("ECHO", new EchoCommand());
-    this.register("SET", new SetCommand());
+    this.register("SET", new SetCommand(REPLICA_CONNECTIONS, DATA));
     this.register("GET", new GetCommand());
     this.register("INFO", new InfoCommand());
-    this.register('REPLCONF', new ReplConfCommand())
-    this.register('PSYNC', new PsyncCommand())
+    this.register("REPLCONF", new ReplConfCommand());
+    this.register("PSYNC", new PsyncCommand());
   }
 
   private register(commandName: string, command: ICommand): void {

@@ -1,10 +1,11 @@
-import { RESPSTATE } from "../../enum/resp-state.enum";
-import { INFO } from "../../store/data";
-import respEncoder from "../../util/resp-encoder";
-import type { ICommand } from "../command.interface";
+import type net from "net";
+import { RESPSTATE } from "../../../enum/resp-state.enum";
+import { INFO } from "../../../store/data";
+import respEncoder from "../../../util/resp-encoder";
+import type { ICommand } from "../../command.interface";
 
 export class InfoCommand implements ICommand {
-  execute(args: string[]): string {
+  execute(args: string[], connection: net.Socket) {
     let info = "";
     if (args[0]?.toLowerCase() == "replication") {
       const role = INFO.get("role");
@@ -15,6 +16,7 @@ export class InfoCommand implements ICommand {
         info += `master_repl_offset:${master_repl_offset}\r\nmaster_replid:${master_repl_id}`;
       }
     }
-    return respEncoder(RESPSTATE.BULK_STRING, [info]);
+    const response = respEncoder(RESPSTATE.BULK_STRING, [info]);
+    connection.write(response);
   }
 }
