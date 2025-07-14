@@ -1,14 +1,9 @@
 import type net from "net";
-import { RESPSTATE } from "../../../enum/resp-state.enum";
-import respEncoder from "../../../util/resp-encoder";
 import type { ICommand } from "../../command.interface";
-import { INFO } from "../../../store/data";
 
 export class SetCommand implements ICommand {
-  private _connectionStore;
   private _dataStore;
   constructor(
-    replicaConnections: Map<string, net.Socket>,
     dataStore: Map<
       string,
       {
@@ -17,15 +12,13 @@ export class SetCommand implements ICommand {
       }
     >
   ) {
-    this._connectionStore = replicaConnections;
     this._dataStore = dataStore;
   }
-  execute(args: string[], connection: net.Socket | null) {
+  execute(args: string[]) {
     if (args.length < 2) {
       throw new Error("ERR wrong number of arguments for 'set' command");
     }
-    console.log("this is the args");
-    console.log(args);
+
     const key = args[0] as string,
       value = args[1] as string;
     let expiresAt: number | null = null;

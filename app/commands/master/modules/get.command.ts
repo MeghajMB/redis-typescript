@@ -14,10 +14,9 @@ export class GetCommand implements ICommand {
     const record = DATA.get(key);
 
     let response;
-    if (
-      !record ||
-      (record.expiresAt !== null && Date.now() > record.expiresAt)
-    ) {
+    if (!record) {
+      response = respEncoder(RESPSTATE.NULL_BULK_STRING);
+    } else if (record.expiresAt !== null && Date.now() > record.expiresAt) {
       DATA.delete(key);
       response = respEncoder(RESPSTATE.NULL_BULK_STRING);
     } else {

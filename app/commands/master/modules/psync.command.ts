@@ -8,7 +8,6 @@ import path from "path";
 
 export class PsyncCommand implements ICommand {
   execute(args: string[], connection: net.Socket) {
-
     const master_repl_id = INFO.get("master_replid");
     const master_repl_offset = INFO.get("master_repl_offset");
     const response = respEncoder(RESPSTATE.STRING, [
@@ -16,10 +15,10 @@ export class PsyncCommand implements ICommand {
     ]);
     connection.write(response);
     if (args[0] == "?" && args[1] == "-1") {
-      const filePath = path.join(__dirname, "../../store/empty.rdb");
+      const filePath = path.join(__dirname, "../../../store/empty.rdb");
       const file = fs.readFileSync(filePath);
       connection.on("close", () => {
-        REPLICA_CONNECTIONS.forEach((socket, key) => {
+        REPLICA_CONNECTIONS.forEach((socket: net.Socket, key: string) => {
           if (socket === connection) REPLICA_CONNECTIONS.delete(key);
         });
       });

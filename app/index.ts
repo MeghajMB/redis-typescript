@@ -1,11 +1,11 @@
 import * as net from "net";
 import { RespParser } from "./util/resp-parser";
-import { CommandRegistry } from "./commands/registry/command-registry";
+import { CommandRegistry } from "./commands/master/registry/command-registry";
 import { INFO } from "./store/data";
 import respEncoder from "./util/resp-encoder";
 import { RESPSTATE } from "./enum/resp-state.enum";
-import fs from "fs";
-import path from "path";
+import { SlaveCommandRegistry } from "./commands/slave/registry/command-registry";
+import { SlaveReplicationHandler } from "./lib/slave-replication-handler";
 
 const args = process.argv.slice(2);
 
@@ -18,6 +18,8 @@ if (args[0] == "--port") {
   }
 }
 const replicaIndex = args.indexOf("--replicaof");
+const commandRegistry = new CommandRegistry();
+const slaveCommandRegistry = new SlaveCommandRegistry();
 if (replicaIndex !== -1) {
   role = "slave";
 
@@ -25,75 +27,39 @@ if (replicaIndex !== -1) {
     const [host, portStr] = args[replicaIndex + 1]!.split(" ");
     masterHost = host;
     masterPort = Number(portStr);
-    if (!host || isNaN(masterPort)) {
+    if (!masterHost || isNaN(masterPort)) {
       console.error("Invalid --replicaof arguments");
       process.exit(1);
     }
-    const masterSocket = net.createConnection(
-      { host: masterHost, port: masterPort },
-      () => {
-        const pingCommand = respEncoder(RESPSTATE.ARRAY, ["PING"]);
-        masterSocket.write(pingCommand);
-        let handshakeStep = 1;
-        masterSocket.on("data", (data: Buffer) => {
-          const response = data.toString();
-          if (handshakeStep == 1) {
-            const replConfPortCommand = respEncoder(RESPSTATE.ARRAY, [
-              "REPLCONF",
-              "listening-port",
-              String(port),
-            ]);
-            masterSocket.write(replConfPortCommand);
-            handshakeStep++;
-          } else if (handshakeStep == 2) {
-            const replConfCapaCommand = respEncoder(RESPSTATE.ARRAY, [
-              "REPLCONF",
-              "capa",
-              "psync2",
-            ]);
-            masterSocket.write(replConfCapaCommand);
-            handshakeStep++;
-          } else if (handshakeStep == 3) {
-            const psyncCommand = respEncoder(RESPSTATE.ARRAY, [
-              "PSYNC",
-              "?",
-              "-1",
-            ]);
-            masterSocket.write(psyncCommand);
-            handshakeStep++;
-          }
-          console.log(data.toString())
-        });
-      }
+
+    const replicationHandler = new SlaveReplicationHandler(
+      masterHost,
+      masterPort,
+      port,
+      slaveCommandRegistry
     );
+    replicationHandler.start();
   }
 }
 INFO.set("role", role);
-const commandRegistry = new CommandRegistry();
 
 const server: net.Server = net.createServer((connection: net.Socket) => {
   connection.on("data", (data: Buffer) => {
     try {
       const input = data.toString().trim();
-      const { command, args } = RespParser.parse(input);
+      const commands = RespParser.parse(input);
+      for (let pipeline of commands) {
+        console.log(pipeline);
+        const handler = commandRegistry.get(pipeline.command);
+        if (!handler) {
+          throw new Error(`ERR unknown command '${pipeline.command}'`);
+        }
 
-      const handler = commandRegistry.get(command);
-      if (!handler) {
-        throw new Error(`ERR unknown command '${command}'`);
-      }
-
-      const response = handler.execute(args);
-      connection.write(response);
-
-      if (command == "PSYNC" && args[0] == "?" && args[1] == "-1") {
-        const filePath = path.join(__dirname, "./store/empty.rdb");
-        const file = fs.readFileSync(filePath);
-        connection.write(`$${file.length}\r\n`);
-        connection.write(file);
+        handler.execute(pipeline.args, connection);
       }
     } catch (error) {
-      console.log(error);
-      if (error instanceof Error) connection.write(`-${error.message}\r\n`);
+      if (error instanceof Error)
+        connection.write(respEncoder(RESPSTATE.ERROR, [error.message]));
     }
   });
 });
