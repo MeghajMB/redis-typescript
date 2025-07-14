@@ -17,6 +17,5 @@ export class InfoCommand implements ICommand {
       }
     }
     const response = respEncoder(RESPSTATE.BULK_STRING, [info]);
-    connection.write(response);
   }
 }

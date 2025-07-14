@@ -23,8 +23,5 @@ export class GetCommand implements ICommand {
       response = respEncoder(RESPSTATE.BULK_STRING, [record.value]);
     }
 
-    if (connection) {
-      connection.write(response);
-    }
   }
 }

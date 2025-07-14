@@ -7,3 +7,14 @@ INFO.set("master_replid", "c96e175ea9dbdda5b38cbfe0b620134f388b7386");
 INFO.set("master_repl_offset", "0");
 
 export const REPLICA_CONNECTIONS: Map<string, net.Socket> = new Map();
+
+export class ReplicaOffset {
+  private static _replica_offset = 0;
+
+  static get() {
+    return this._replica_offset;
+  }
+  static set(val:number) {
+    this._replica_offset = val;
+  }
+}

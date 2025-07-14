@@ -1,5 +1,6 @@
 import type { ICommandRegistry } from "../commands/master/registry/command-registry.interface";
 import { RESPSTATE } from "../enum/resp-state.enum";
+import { ReplicaOffset } from "../store/data";
 import respEncoder from "../util/resp-encoder";
 import { RespParser } from "../util/resp-parser";
 import net from "net";
@@ -9,6 +10,7 @@ export class SlaveReplicationHandler {
   private rdbLength: number | null = null;
   private fullResyncReceived = false;
   private handshakeStep = 1;
+  private ackOffset = 0;
 
   constructor(
     private masterHost: string,
@@ -153,6 +155,7 @@ export class SlaveReplicationHandler {
   private handleReplicationCommands(socket: net.Socket, data: Buffer) {
     try {
       const input = data.toString();
+
       const commands = RespParser.parse(input);
 
       for (const cmd of commands) {
@@ -162,6 +165,12 @@ export class SlaveReplicationHandler {
           continue;
         }
         handler.execute(cmd.args, socket);
+        const currOffset = ReplicaOffset.get();
+        const length = Buffer.byteLength(
+          respEncoder(RESPSTATE.ARRAY, [cmd.command, ...cmd.args]),
+          "utf-8"
+        );
+        ReplicaOffset.set(currOffset + length);
       }
     } catch (error) {
       console.error(
