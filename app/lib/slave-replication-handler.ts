@@ -10,7 +10,6 @@ export class SlaveReplicationHandler {
   private rdbLength: number | null = null;
   private fullResyncReceived = false;
   private handshakeStep = 1;
-  private ackOffset = 0;
 
   constructor(
     private masterHost: string,
@@ -138,8 +137,6 @@ export class SlaveReplicationHandler {
       const rdbFile = this.rdbBuffer.subarray(0, this.rdbLength);
       const remainingData = this.rdbBuffer.subarray(this.rdbLength);
 
-      console.log(`Received RDB file (${rdbFile.length} bytes)`);
-
       // Process any commands that came after RDB
       if (remainingData.length > 0) {
         this.handleReplicationCommands(socket, remainingData);
@@ -164,7 +161,12 @@ export class SlaveReplicationHandler {
           console.error(`Unknown command: ${cmd.command}`);
           continue;
         }
-        handler.execute(cmd.args, socket);
+        const result = handler.execute(cmd.args, socket);
+        if (typeof result === "string" || Buffer.isBuffer(result)) {
+          throw new Error(
+            `Replica command '${cmd.command}' returned a response`
+          );
+        }
         const currOffset = ReplicaOffset.get();
         const length = Buffer.byteLength(
           respEncoder(RESPSTATE.ARRAY, [cmd.command, ...cmd.args]),

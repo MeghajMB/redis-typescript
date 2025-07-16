@@ -1,7 +1,6 @@
-import type net from "net";
 import type { ICommand } from "../../command.interface";
 
-export class SetCommand implements ICommand {
+export class SetReplicaCommand implements ICommand {
   private _dataStore;
   constructor(
     dataStore: Map<

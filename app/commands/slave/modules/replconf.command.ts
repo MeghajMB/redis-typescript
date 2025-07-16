@@ -6,7 +6,7 @@ import { ReplicaOffset } from "../../../store/data";
 
 export class ReplConfCommand implements ICommand {
   execute(args: string[], connection: net.Socket) {
-    if (args[0] == "GETACK" && args[1] == "*") {
+    if (args[0] === "GETACK" && args[1] === "*") {
       const currOffset = ReplicaOffset.get();
       const response = respEncoder(RESPSTATE.ARRAY, [
         "REPLCONF",
@@ -14,6 +14,10 @@ export class ReplConfCommand implements ICommand {
         String(currOffset),
       ]);
       connection.write(response);
+      return;
     }
+
+    const okResponse = respEncoder(RESPSTATE.STRING, ["OK"]);
+    connection.write(okResponse);
   }
 }

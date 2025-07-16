@@ -1,25 +1,33 @@
 export class RespParser {
   static parse(input: string): { command: string; args: string[] }[] {
-    if (input.length === 0 || input[0] != "*") {
-      throw new Error("Invalid RESP format");
-    }
-    const commands = input.split("*").filter((line) => line !== "");
-    const final = [];
-    for (let command of commands) {
-      const lines = command.split("\r\n").filter((line) => line !== "");
-      const args: string[] = [];
-      for (let i = 1; i < lines.length; i += 2) {
-        if (lines[i]!.startsWith("$")) {
-          args.push(lines[i + 1]!);
-        }
+    const commands: { command: string; args: string[] }[] = [];
+
+    let i = 0;
+    while (i < input.length) {
+      if (input[i] !== "*") break;
+
+      // Parse number of elements
+      const lineEnd = input.indexOf("\r\n", i);
+      const count = parseInt(input.slice(i + 1, lineEnd));
+      i = lineEnd + 2;
+
+      const parts: string[] = [];
+      for (let j = 0; j < count; j++) {
+        if (input[i] !== "$") throw new Error("Expected $");
+        const lenEnd = input.indexOf("\r\n", i);
+        const len = parseInt(input.slice(i + 1, lenEnd));
+        i = lenEnd + 2;
+        const val = input.slice(i, i + len);
+        parts.push(val);
+        i += len + 2; 
       }
-      if (args.length === 0) {
-        throw new Error("No command provided");
-      }
-      final.push({ command: args[0]!.toUpperCase(), args: args.slice(1) });
+
+      commands.push({
+        command: parts[0]!.toUpperCase(),
+        args: parts.slice(1),
+      });
     }
 
-
-    return final
+    return commands;
   }
 }

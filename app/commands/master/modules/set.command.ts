@@ -2,13 +2,16 @@ import type net from "net";
 import { RESPSTATE } from "../../../enum/resp-state.enum";
 import respEncoder from "../../../util/resp-encoder";
 import type { ICommand } from "../../command.interface";
-import { INFO } from "../../../store/data";
+import { INFO, RelativeMasterOffset } from "../../../store/data";
 
 export class SetCommand implements ICommand {
   private _connectionStore;
   private _dataStore;
   constructor(
-    replicaConnections: Map<string, net.Socket>,
+    replicaConnections: Map<
+      string,
+      { connection: net.Socket; offset: number; connectionTimeOffset: number }
+    >,
     dataStore: Map<
       string,
       {
@@ -24,13 +27,13 @@ export class SetCommand implements ICommand {
     if (args.length < 2) {
       throw new Error("ERR wrong number of arguments for 'set' command");
     }
-
+    const isMaster = INFO.get("role") == "master";
     const key = args[0] as string,
       value = args[1] as string;
     let expiresAt: number | null = null;
-    if (INFO.get("role") == "master") {
-      this._connectionStore.forEach((socket, key) => {
-        socket.write(respEncoder(RESPSTATE.ARRAY, ["SET", ...args]));
+    if (isMaster) {
+      this._connectionStore.forEach((socketData, key) => {
+        socketData.connection.write(respEncoder(RESPSTATE.ARRAY, ["SET", ...args]));
       });
     }
 
@@ -40,9 +43,12 @@ export class SetCommand implements ICommand {
         expiresAt = Date.now() + ttl;
       }
     }
-
+    const curroffset = RelativeMasterOffset.get();
+    RelativeMasterOffset.set(curroffset + 1);
     this._dataStore.set(key, { value, expiresAt });
-    const response = respEncoder(RESPSTATE.SUCCESS);
-    connection.write(response);
+    if (isMaster) {
+      const response = respEncoder(RESPSTATE.SUCCESS);
+      connection.write(response);
+    }
   }
 }

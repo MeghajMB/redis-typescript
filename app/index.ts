@@ -49,13 +49,19 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
       const input = data.toString().trim();
       const commands = RespParser.parse(input);
       for (let pipeline of commands) {
-        console.log(pipeline);
+    
         const handler = commandRegistry.get(pipeline.command);
         if (!handler) {
           throw new Error(`ERR unknown command '${pipeline.command}'`);
         }
 
         handler.execute(pipeline.args, connection);
+        const currOffset = Number(INFO.get("master_repl_offset") || 0);
+        const length = Buffer.byteLength(
+          respEncoder(RESPSTATE.ARRAY, [pipeline.command, ...pipeline.args]),
+          "utf-8"
+        );
+        INFO.set("master_repl_offset", String(currOffset + length));
       }
     } catch (error) {
       if (error instanceof Error)
