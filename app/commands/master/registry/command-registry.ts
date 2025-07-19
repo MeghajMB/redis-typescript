@@ -9,6 +9,8 @@ import { InfoCommand } from "../modules/info.command";
 import { ReplConfCommand } from "../modules/replconf.command";
 import { PsyncCommand } from "../modules/psync.command";
 import { WaitCommand } from "../modules/wait.command";
+import { ConfigCommand } from "../modules/config.command";
+import { KeyCommand } from "../modules/key.command";
 
 export class CommandRegistry implements ICommandRegistry {
   private _commands: Map<string, ICommand> = new Map();
@@ -22,6 +24,8 @@ export class CommandRegistry implements ICommandRegistry {
     this.register("REPLCONF", new ReplConfCommand());
     this.register("PSYNC", new PsyncCommand());
     this.register("WAIT", new WaitCommand());
+    this.register("CONFIG", new ConfigCommand());
+    this.register("KEYS", new KeyCommand());
   }
 
   private register(commandName: string, command: ICommand): void {

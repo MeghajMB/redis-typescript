@@ -32,3 +32,8 @@ export class RelativeMasterOffset {
     this._relative_master_offset = val;
   }
 }
+
+export const CONFIG = {
+  dir: "",
+  dbfilename: "",
+};
