@@ -1,4 +1,5 @@
 import type net from "net";
+import type { Lists } from "./list";
 export const DATA: Map<string, { value: string; expiresAt: null | number }> =
   new Map();
 
@@ -37,3 +38,5 @@ export const CONFIG = {
   dir: "",
   dbfilename: "",
 };
+
+export const LISTS: Map<string, Lists> = new Map();

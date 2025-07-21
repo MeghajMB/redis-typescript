@@ -11,6 +11,12 @@ import { PsyncCommand } from "../modules/psync.command";
 import { WaitCommand } from "../modules/wait.command";
 import { ConfigCommand } from "../modules/config.command";
 import { KeyCommand } from "../modules/key.command";
+import { RPushCommand } from "../modules/lists/rpush.command";
+import { LPushCommand } from "../modules/lists/lpush.command";
+import { LRangeCommand } from "../modules/lists/lrange.command";
+import { LLenCommand } from "../modules/lists/llen.command";
+import { LPopCommand } from "../modules/lists/lpop.command";
+import { BLPopCommand } from "../modules/lists/blpop.command";
 
 export class CommandRegistry implements ICommandRegistry {
   private _commands: Map<string, ICommand> = new Map();
@@ -26,6 +32,13 @@ export class CommandRegistry implements ICommandRegistry {
     this.register("WAIT", new WaitCommand());
     this.register("CONFIG", new ConfigCommand());
     this.register("KEYS", new KeyCommand());
+    /* List Commands */
+    this.register("RPUSH", new RPushCommand());
+    this.register("LPUSH", new LPushCommand());
+    this.register("LRANGE", new LRangeCommand());
+    this.register("LLEN", new LLenCommand());
+    this.register("LPOP", new LPopCommand());
+    this.register("BLPOP", new BLPopCommand());
   }
 
   private register(commandName: string, command: ICommand): void {
