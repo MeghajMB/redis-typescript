@@ -17,6 +17,8 @@ import { LRangeCommand } from "../modules/lists/lrange.command";
 import { LLenCommand } from "../modules/lists/llen.command";
 import { LPopCommand } from "../modules/lists/lpop.command";
 import { BLPopCommand } from "../modules/lists/blpop.command";
+import { TypeCommand } from "../modules/type.command";
+import { XAddCommand } from "../modules/xadd.command";
 
 export class CommandRegistry implements ICommandRegistry {
   private _commands: Map<string, ICommand> = new Map();
@@ -39,6 +41,9 @@ export class CommandRegistry implements ICommandRegistry {
     this.register("LLEN", new LLenCommand());
     this.register("LPOP", new LPopCommand());
     this.register("BLPOP", new BLPopCommand());
+    /* Stream Commands */
+    this.register("TYPE", new TypeCommand());
+    this.register("XADD", new XAddCommand());
   }
 
   private register(commandName: string, command: ICommand): void {

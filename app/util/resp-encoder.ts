@@ -10,7 +10,7 @@ export default function respEncoder(
       return `+${data[0]}\r\n`;
 
     case RESPSTATE.ERROR:
-      return `-Error ${data[0]}\r\n`;
+      return `-ERR ${data[0]}\r\n`;
 
     case RESPSTATE.INTEGER:
       return `:${data}\r\n`;
