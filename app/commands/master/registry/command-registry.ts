@@ -19,6 +19,7 @@ import { LPopCommand } from "../modules/lists/lpop.command";
 import { BLPopCommand } from "../modules/lists/blpop.command";
 import { TypeCommand } from "../modules/type.command";
 import { XAddCommand } from "../modules/xadd.command";
+import { XRangeCommand } from "../modules/xrange.command";
 
 export class CommandRegistry implements ICommandRegistry {
   private _commands: Map<string, ICommand> = new Map();
@@ -44,6 +45,7 @@ export class CommandRegistry implements ICommandRegistry {
     /* Stream Commands */
     this.register("TYPE", new TypeCommand());
     this.register("XADD", new XAddCommand());
+    this.register("XRANGE", new XRangeCommand());
   }
 
   private register(commandName: string, command: ICommand): void {

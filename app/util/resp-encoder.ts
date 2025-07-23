@@ -1,9 +1,9 @@
 import { RESPSTATE } from "../enum/resp-state.enum";
-import type { RESPStateType } from "../types/types";
+import type { RESPData, RESPStateType } from "../types/types";
 
 export default function respEncoder(
   state: RESPStateType,
-  data: string[] = [""]
+  data: RESPData = [""]
 ): string {
   switch (state) {
     case RESPSTATE.STRING:
@@ -21,7 +21,11 @@ export default function respEncoder(
     case RESPSTATE.ARRAY:
       let result = `*${data.length}\r\n`;
       for (let i = 0; i < data.length; i++) {
-        result += `$${data[i]?.length}\r\n${data[i]}\r\n`;
+        if (Array.isArray(data[i])) {
+          result+=respEncoder(RESPSTATE.ARRAY, data[i]);
+        } else {
+          result += respEncoder(RESPSTATE.BULK_STRING, [data[i]]);
+        }
       }
       return result;
 
