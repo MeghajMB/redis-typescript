@@ -40,3 +40,5 @@ export const CONFIG = {
 };
 
 export const LISTS: Map<string, Lists> = new Map();
+
+export const STREAM: Map<string, Record<string, string>[]> = new Map();
