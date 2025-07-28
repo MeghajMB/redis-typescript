@@ -40,17 +40,7 @@ printf '*1\r\n$4\r\nPING\r\n' | ncat 127.0.0.1 6379
 
 ## 📦 Supported Commands
 
-### 🔧 Core
-
-* `PING`
-* `ECHO`
-* `SET`
-* `GET`
-* `INFO`
-* `CONFIG`
-* `KEYS`
-* `TYPE`
-* `INCR`
+### 🔧 Core * `PING`,`ECHO`,`SET`,`GET`,`INFO`,`CONFIG`,`KEYS`,`TYPE`,`INCR`
 
 ### 🧬 Replication
 
