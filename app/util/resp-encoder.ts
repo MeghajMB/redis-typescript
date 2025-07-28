@@ -3,7 +3,7 @@ import type { RESPData, RESPStateType } from "../types/types";
 
 export default function respEncoder(
   state: RESPStateType,
-  data: RESPData = [""]
+  data: RESPData = []
 ): string {
   switch (state) {
     case RESPSTATE.STRING:
@@ -22,9 +22,9 @@ export default function respEncoder(
       let result = `*${data.length}\r\n`;
       for (let i = 0; i < data.length; i++) {
         if (Array.isArray(data[i])) {
-          result+=respEncoder(RESPSTATE.ARRAY, data[i]);
+          result += respEncoder(RESPSTATE.ARRAY, data[i]);
         } else {
-          result += respEncoder(RESPSTATE.BULK_STRING, [data[i]]);
+          result += respEncoder(RESPSTATE.BULK_STRING, [data[i]!]);
         }
       }
       return result;

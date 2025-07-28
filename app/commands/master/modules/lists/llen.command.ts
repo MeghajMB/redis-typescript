@@ -5,7 +5,7 @@ import type { ICommand } from "../../../command.interface";
 import { LISTS } from "../../../../store/data";
 
 export class LLenCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     if (args.length !== 1) {
       throw new Error(`ERR wrong number of arguments for 'llen' command`);
     }

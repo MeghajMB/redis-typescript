@@ -5,7 +5,7 @@ import respEncoder from "../../../util/resp-encoder";
 import type { ICommand } from "../../command.interface";
 
 export class GetCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     if (args.length < 1 || !args[0]) {
       throw new Error("ERR wrong number of arguments for 'get' command");
     }

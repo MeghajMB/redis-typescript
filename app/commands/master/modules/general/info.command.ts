@@ -1,11 +1,11 @@
 import type net from "net";
-import { RESPSTATE } from "../../../enum/resp-state.enum";
-import { INFO } from "../../../store/data";
-import respEncoder from "../../../util/resp-encoder";
-import type { ICommand } from "../../command.interface";
+import { RESPSTATE } from "../../../../enum/resp-state.enum";
+import { INFO } from "../../../../store/data";
+import respEncoder from "../../../../util/resp-encoder";
+import type { ICommand } from "../../../command.interface";
 
 export class InfoCommand implements ICommand {
-  execute(args: string[], connection: net.Socket ) {
+  async execute(args: string[], connection: net.Socket ) {
     let info = "";
     if (args[0]?.toLowerCase() == "replication") {
       const role = INFO.get("role");

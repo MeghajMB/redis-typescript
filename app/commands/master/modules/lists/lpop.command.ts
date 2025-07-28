@@ -5,7 +5,7 @@ import type { ICommand } from "../../../command.interface";
 import { LISTS } from "../../../../store/data";
 
 export class LPopCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     if (!args[0])
       throw new Error(`ERR wrong number of arguments for 'lpop' command`);
     const list = LISTS.get(args[0]);

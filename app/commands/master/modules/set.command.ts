@@ -23,7 +23,7 @@ export class SetCommand implements ICommand {
     this._connectionStore = replicaConnections;
     this._dataStore = dataStore;
   }
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection?: net.Socket) {
     if (args.length < 2) {
       throw new Error("ERR wrong number of arguments for 'set' command");
     }
@@ -31,9 +31,12 @@ export class SetCommand implements ICommand {
     const key = args[0] as string,
       value = args[1] as string;
     let expiresAt: number | null = null;
+    let response = respEncoder(RESPSTATE.NULL_BULK_STRING);
     if (isMaster) {
       this._connectionStore.forEach((socketData, key) => {
-        socketData.connection.write(respEncoder(RESPSTATE.ARRAY, ["SET", ...args]));
+        socketData.connection.write(
+          respEncoder(RESPSTATE.ARRAY, ["SET", ...args])
+        );
       });
     }
 
@@ -46,9 +49,10 @@ export class SetCommand implements ICommand {
     const curroffset = RelativeMasterOffset.get();
     RelativeMasterOffset.set(curroffset + 1);
     this._dataStore.set(key, { value, expiresAt });
-    if (isMaster) {
-      const response = respEncoder(RESPSTATE.SUCCESS);
+    response = respEncoder(RESPSTATE.SUCCESS);
+    if (isMaster && connection) {
       connection.write(response);
     }
+    return response;
   }
 }

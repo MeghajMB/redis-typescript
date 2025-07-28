@@ -1,11 +1,11 @@
 import type { ICommand } from "../../command.interface";
-import { EchoCommand } from "../modules/echo.command";
+import { EchoCommand } from "../modules/general/echo.command";
 import { SetCommand } from "../modules/set.command";
 import { GetCommand } from "../modules/get.command";
-import { PingCommand } from "../modules/ping.command";
+import { PingCommand } from "../modules/general/ping.command";
 import { DATA, REPLICA_CONNECTIONS } from "../../../store/data";
 import type { ICommandRegistry } from "./command-registry.interface";
-import { InfoCommand } from "../modules/info.command";
+import { InfoCommand } from "../modules/general/info.command";
 import { ReplConfCommand } from "../modules/replconf.command";
 import { PsyncCommand } from "../modules/psync.command";
 import { WaitCommand } from "../modules/wait.command";
@@ -17,10 +17,14 @@ import { LRangeCommand } from "../modules/lists/lrange.command";
 import { LLenCommand } from "../modules/lists/llen.command";
 import { LPopCommand } from "../modules/lists/lpop.command";
 import { BLPopCommand } from "../modules/lists/blpop.command";
-import { TypeCommand } from "../modules/type.command";
+import { TypeCommand } from "../modules/general/type.command";
 import { XAddCommand } from "../modules/streams/xadd.command";
 import { XRangeCommand } from "../modules/streams/xrange.command";
 import { XReadCommand } from "../modules/streams/xread.command";
+import { IncrCommand } from "../modules/transactions/incr.command";
+import { MultiCommand } from "../modules/transactions/multi.command";
+import { ExecCommand } from "../modules/transactions/exec.command";
+import { DiscardCommand } from "../modules/transactions/discard.command";
 
 export class CommandRegistry implements ICommandRegistry {
   private _commands: Map<string, ICommand> = new Map();
@@ -48,6 +52,14 @@ export class CommandRegistry implements ICommandRegistry {
     this.register("XADD", new XAddCommand());
     this.register("XRANGE", new XRangeCommand());
     this.register("XREAD", new XReadCommand());
+    /* Transaction Commands */
+    this.register(
+      "INCR",
+      new IncrCommand(new SetCommand(REPLICA_CONNECTIONS, DATA))
+    );
+    this.register("MULTI", new MultiCommand());
+    this.register("EXEC", new ExecCommand());
+    this.register("DISCARD", new DiscardCommand());
   }
 
   private register(commandName: string, command: ICommand): void {

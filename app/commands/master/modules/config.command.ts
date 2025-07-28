@@ -5,7 +5,7 @@ import type { ICommand } from "../../command.interface";
 import { CONFIG } from "../../../store/data";
 
 export class ConfigCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     let response: string = respEncoder(RESPSTATE.NULL_BULK_STRING);
     if (args[0]!.toUpperCase() == "GET") {
       if (args[1] == "dir") {
@@ -15,5 +15,6 @@ export class ConfigCommand implements ICommand {
       }
       connection.write(response);
     }
+    return response;
   }
 }

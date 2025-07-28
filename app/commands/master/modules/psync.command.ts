@@ -11,7 +11,7 @@ import fs from "fs";
 import path from "path";
 
 export class PsyncCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     const master_repl_id = INFO.get("master_replid");
     const response = respEncoder(RESPSTATE.STRING, [
       `FULLRESYNC ${master_repl_id} 0`,
@@ -37,5 +37,6 @@ export class PsyncCommand implements ICommand {
       connection.write(`$${file.length}\r\n`);
       connection.write(file);
     }
+    return response;
   }
 }

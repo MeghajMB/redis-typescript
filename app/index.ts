@@ -1,7 +1,7 @@
 import * as net from "net";
 import { RespParser } from "./util/resp-parser";
 import { CommandRegistry } from "./commands/master/registry/command-registry";
-import { CONFIG, DATA, INFO } from "./store/data";
+import { clients, CONFIG, DATA, INFO } from "./store/data";
 import respEncoder from "./util/resp-encoder";
 import { RESPSTATE } from "./enum/resp-state.enum";
 import { SlaveCommandRegistry } from "./commands/slave/registry/command-registry";
@@ -67,17 +67,34 @@ if (replicaIndex !== -1) {
 INFO.set("role", role);
 
 const server: net.Server = net.createServer((connection: net.Socket) => {
-  connection.on("data", (data: Buffer) => {
+  clients.set(connection, {
+    isInTransaction: false,
+    queuedCommands: [],
+  });
+
+  connection.on("data", async (data: Buffer) => {
     try {
       const input = data.toString().trim();
+      const client = clients.get(connection);
       const commands = RespParser.parse(input);
       for (let pipeline of commands) {
+        if (
+          client?.isInTransaction &&
+          pipeline.command !== "EXEC" &&
+          pipeline.command !== "DISCARD"
+        ) {
+          client.queuedCommands.push(pipeline);
+          const response = respEncoder(RESPSTATE.STRING, ["QUEUED"]);
+          connection.write(response);
+          continue;
+        }
+
         const handler = commandRegistry.get(pipeline.command);
         if (!handler) {
           throw new Error(`ERR unknown command '${pipeline.command}'`);
         }
 
-        handler.execute(pipeline.args, connection);
+        await handler.execute(pipeline.args, connection);
         const currOffset = Number(INFO.get("master_repl_offset") || 0);
         const length = Buffer.byteLength(
           respEncoder(RESPSTATE.ARRAY, [pipeline.command, ...pipeline.args]),

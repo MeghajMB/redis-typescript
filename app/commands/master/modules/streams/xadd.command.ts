@@ -5,7 +5,7 @@ import type { ICommand } from "../../../command.interface";
 import { STREAM } from "../../../../store/data";
 
 export class XAddCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     if (args.length < 3 || args.length % 2 !== 0) {
       throw new Error(`ERR wrong number of arguments for 'xadd' command`);
     }

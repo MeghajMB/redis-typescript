@@ -6,7 +6,7 @@ import { LISTS } from "../../../../store/data";
 import { Lists } from "../../../../store/list";
 
 export class LPushCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     if (args.length < 2) {
       throw new Error(`ERR wrong number of arguments for 'lpush' command`);
     }

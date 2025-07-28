@@ -5,7 +5,7 @@ import type { ICommand } from "../../command.interface";
 import { DATA } from "../../../store/data";
 
 export class KeyCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     let response: string = respEncoder(RESPSTATE.NULL_BULK_STRING);
     if (args[0]!.toUpperCase() == "*") {
       const keys = [...DATA.keys()];
@@ -13,5 +13,6 @@ export class KeyCommand implements ICommand {
       response = respEncoder(RESPSTATE.ARRAY, keys);
       connection.write(response);
     }
+    return response;
   }
 }

@@ -1,4 +1,4 @@
 import type net from "net";
 export interface ICommand {
-  execute(args: string[], connection: net.Socket): void;
+  execute(args: string[], connection?: net.Socket): Promise<string | void>;
 }

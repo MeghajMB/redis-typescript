@@ -5,7 +5,7 @@ import type { ICommand } from "../../command.interface";
 import { REPLICA_CONNECTIONS } from "../../../store/data";
 
 export class ReplConfCommand implements ICommand {
-  execute(args: string[], connection: net.Socket) {
+  async execute(args: string[], connection: net.Socket) {
     if (args[0] == "ACK") {
       const socketKey = `${connection.remoteAddress}:${connection.remotePort}`;
       const offset = parseInt(String(args[1]), 10);
